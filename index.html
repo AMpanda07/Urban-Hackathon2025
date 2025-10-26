@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Connect</title>
+    <!-- Import Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Import Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Configure Tailwind to use Inter font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        spin: 'spin 1s linear infinite',
+                    },
+                     keyframes: { // Added keyframes for spinner
+                        spin: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                    },
+                },
+            },
+             darkMode: 'class', // Enable dark mode based on class
+        };
+    </script>
+
+    <!-- Style for the Inter font and layout -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background for contrast */
+        }
+        /* Make center column have a border */
+        .main-content-area { /* Changed class name for clarity */
+            border-left: 1px solid #e5e7eb; /* border-gray-200 */
+            border-right: 1px solid #e5e7eb; /* border-gray-200 */
+            min-height: 100vh;
+        }
+        /* Sticky headers */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+        /* Styles for active and inactive tabs */
+        .tab-link.active {
+            color: #2563EB; /* text-blue-600 */
+            border-bottom-width: 2px;
+            border-color: #2563EB; /* border-blue-600 */
+            font-weight: 500;
+        }
+        .tab-link {
+            color: #6B7280; /* text-gray-500 */
+        }
+        .tab-link:not(.active):hover {
+            color: #374151; /* hover:text-gray-700 */
+            border-bottom-width: 2px;
+            border-color: #D1D5DB; /* hover:border-gray-300 */
+        }
+        /* Styles for review modal */
+        #reviewModalOverlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #reviewModalPanel {
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Styles for star rating */
+        .star-btn {
+            color: #D1D5DB; /* text-gray-300 */
+            transition: color 0.1s ease-in-out;
+        }
+        .star-btn.hover,
+        .star-btn.selected {
+            color: #F59E0B; /* text-yellow-500 */
+        }
+        /* Style for toggle switch 'on' state */
+        .toggle-on {
+            background-color: #2563EB; /* bg-blue-600 */
+        }
+        /* Simple loading spinner for buttons */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            color: transparent !important;
+        }
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -0.5rem; /* half width */
+            margin-top: -0.5rem; /* half height */
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+        }
+        .calendar-day {
+            aspect-ratio: 1 / 1; /* Make days square */
+        }
+        .calendar-day.today {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+        }
+        .calendar-day.selected {
+            background-color: #1d4ed8; /* bg-blue-700 */
+             color: white;
+             font-weight: bold;
+        }
+
+        /* --- Dark Mode Styles --- */
+        .dark {
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+        }
+        .dark .main-content-area,
+        .dark .bg-white {
+            background-color: #1f2937; /* gray-800 */
+            border-color: #374151; /* gray-700 */
+        }
+         .dark nav { /* Target left nav */
+             background-color: #1f2937; /* gray-800 */
+        }
+        .dark aside { /* Target right sidebar */
+             background-color: #111827; /* gray-900 */
+        }
+        .dark .sticky-header {
+            background-color: rgba(31, 41, 55, 0.85); /* gray-800 semi-transparent */
+            border-color: #374151; /* gray-700 */
+        }
+        .dark .text-gray-900,
+        .dark .text-gray-800,
+        .dark .text-xl.font-bold,
+        .dark .font-semibold.text-gray-800,
+        .dark .text-lg.font-bold,
+         .dark .text-3xl.font-bold {
+            color: #f9fafb; /* gray-50 */
+        }
+        .dark .text-gray-700 {
+             color: #9ca3af; /* gray-400 */
+        }
+        .dark .text-gray-600,
+        .dark .text-gray-500,
+        .dark .tab-link {
+            color: #9ca3af; /* gray-400 */
+        }
+        .dark .bg-gray-100 { /* Sidebar cards */
+            background-color: #1f2937; /* gray-800 */
+             border: 1px solid #374151; /* gray-700 */
+        }
+        .dark .bg-gray-50 { /* Inner cards */
+            background-color: #374151; /* gray-700 */
+            border-color: #4b5563; /* gray-600 */
+        }
+        .dark .border-gray-200 {
+            border-color: #374151; /* gray-700 */
+        }
+        .dark .hover\:bg-gray-100:hover,
+        .dark .hover\:bg-gray-50:hover {
+            background-color: #374151; /* gray-700 */
+        }
+        .dark .hover\:bg-gray-200:hover {
+            background-color: #4b5563; /* gray-600 */
+        }
+        .dark .text-blue-700 {
+            color: #60a5fa; /* light blue */
+        }
+        .dark .text-blue-600,
+        .dark .text-blue-900 {
+            color: #93c5fd; /* lighter blue */
+        }
+        .dark .bg-blue-50 {
+            background-color: #1e3a8a; /* dark blue */
+            border-color: #3b82f6; /* medium blue */
+        }
+        .dark .text-blue-900 {
+             color: #dbeafe; /* lightest blue */
+        }
+        .dark .bg-yellow-50 {
+            background-color: #78350f; /* dark amber */
+            border-color: #f59e0b; /* amber-500 */
+        }
+        .dark .text-yellow-900 {
+            color: #fefce8; /* lightest yellow */
+        }
+        .dark .text-yellow-700 {
+            color: #fcd34d; /* light amber */
+        }
+         .dark input, .dark textarea, .dark select {
+             background-color: #374151; /* gray-700 */
+             border-color: #4b5563; /* gray-600 */
+             color: #d1d5db; /* gray-300 */
+        }
+         .dark input::placeholder, .dark textarea::placeholder {
+             color: #6b7280; /* gray-500 */
+        }
+         .dark .calendar-day {
+             background-color: #374151; /* gray-700 */
+             border-color: #4b5563; /* gray-600 */
+             color: #d1d5db; /* gray-300 */
+         }
+         .dark .calendar-day:hover {
+             background-color: #4b5563; /* gray-600 */
+         }
+         .dark .calendar-day.today {
+             background-color: #2563eb; /* blue-600 */
+             color: white;
+         }
+        .dark .calendar-day.selected {
+             background-color: #1d4ed8; /* blue-700 */
+             color: white;
+        }
+         .dark .text-gray-400 {
+             color: #9ca3af; /* gray-400 */
+         }
+
+         /* High Contrast Styles (Example) */
+         .high-contrast {
+             /* Increase base contrast */
+             background-color: black;
+             color: white;
+         }
+         .high-contrast .main-content-area,
+         .high-contrast .bg-white,
+         .high-contrast nav,
+         .high-contrast aside,
+         .high-contrast .bg-gray-100,
+         .high-contrast .bg-gray-50,
+         .high-contrast input,
+         .high-contrast textarea,
+         .high-contrast select,
+         .high-contrast .calendar-day {
+             background-color: black;
+             color: white;
+             border: 1px solid white;
+         }
+          .high-contrast .sticky-header {
+             background-color: rgba(0, 0, 0, 0.9);
+             border-color: white;
+         }
+         .high-contrast .text-gray-900,
+         .high-contrast .text-gray-800,
+         .high-contrast .text-xl.font-bold,
+         .high-contrast .font-semibold.text-gray-800,
+         .high-contrast .text-lg.font-bold,
+         .high-contrast .text-3xl.font-bold {
+             color: white;
+         }
+         .high-contrast .text-gray-700,
+         .high-contrast .text-gray-600,
+         .high-contrast .text-gray-500,
+         .high-contrast .tab-link,
+         .high-contrast .text-gray-400 {
+             color: #f0f0f0; /* Slightly off-white for less important text */
+         }
+         .high-contrast .hover\:bg-gray-100:hover,
+         .high-contrast .hover\:bg-gray-50:hover,
+         .high-contrast .hover\:bg-gray-200:hover,
+         .high-contrast .calendar-day:hover {
+             background-color: #333; /* Dark gray for hover */
+         }
+         .high-contrast .text-blue-700,
+         .high-contrast .text-blue-600,
+         .high-contrast .text-blue-900,
+         .high-contrast .text-yellow-700,
+         .high-contrast .text-yellow-900 {
+             color: #00ffff; /* Cyan for links/highlights */
+         }
+         .high-contrast .bg-blue-50,
+         .high-contrast .bg-yellow-50 {
+             background-color: black;
+             border-color: #00ffff; /* Cyan border */
+         }
+         .high-contrast .bg-blue-600,
+         .high-contrast .toggle-on {
+             background-color: #00ffff; /* Cyan for buttons */
+             color: black;
+         }
+         .high-contrast .bg-black {
+             background-color: white;
+             color: black;
+         }
+         .high-contrast .calendar-day.today,
+         .high-contrast .calendar-day.selected {
+             background-color: #00ffff;
+             color: black;
+         }
+         /* Add specific overrides if needed */
+        /* Verification Badge Style */
+        .verified-badge {
+            color: #2563EB; /* text-blue-600 */
+        }
+        .dark .verified-badge {
+            color: #60a5fa; /* light blue */
+        }
+        .high-contrast .verified-badge {
+            color: #00ffff; /* cyan */
+        }
+
+
+    </style>
+</head>
+<body class="bg-white">
+
+    <div class="container mx-auto max-w-7xl">
+        <div class="grid grid-cols-10">
+
+            <!-- === 1. LEFT NAVIGATION === -->
+            <nav class="col-span-2 sticky top-0 h-screen p-4 pr-6 hidden md:block bg-white">
+                <div class="flex flex-col justify-between h-full">
+                    <div>
+                        <!-- Logo -->
+                        <div class="p-2 mb-4">
+                            <h1 class="text-2xl font-bold text-blue-600">Skills Connect</h1>
+                        </div>
+
+                        <!-- Nav Links -->
+                        <ul class="space-y-1">
+                            <li><a href="#" id="navHomeButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg font-bold"><i data-lucide="home" class="w-6 h-6"></i><span>Home</span></a></li>
+                            <li><a href="#" id="navCommunityButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="users" class="w-6 h-6"></i><span>Community</span></a></li>
+                            <li><a href="#" id="navMatchButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="map-pin" class="w-6 h-6"></i><span>Match</span></a></li>
+                            <li><a href="#" id="navSchedulesButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="calendar-clock" class="w-6 h-6"></i><span>Schedules</span></a></li>
+                            <li><a href="#" id="navCreditsButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="credit-card" class="w-6 h-6"></i><span>Credits</span></a></li>
+                            <li><a href="#" id="navCoursesButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="book-open" class="w-6 h-6"></i><span>Courses</span></a></li>
+                            <li><a href="#" id="navSettingsButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="settings" class="w-6 h-6"></i><span>Settings</span></a></li>
+                            <li><a href="#" id="navDashboardButton" class="nav-link flex items-center space-x-3 p-3 rounded-full hover:bg-gray-100 transition-colors duration-200 text-lg"><i data-lucide="layout-dashboard" class="w-6 h-6"></i><span>Dashboard</span></a></li>
+                        </ul>
+
+                        <!-- Post Button -->
+                        <button id="navPostButton" class="w-full bg-blue-600 text-white py-3 px-6 rounded-full font-bold text-lg mt-6 hover:bg-blue-700 transition-colors duration-200">
+                            Post
+                        </button>
+                    </div>
+
+                    <!-- User Card -->
+                    <div id="currentUserCard" class="p-3 rounded-full hover:bg-gray-100 cursor-pointer" role="button" tabindex="0">
+                        <!-- User info will be injected by JS -->
+                    </div>
+                </div>
+            </nav>
+
+            <!-- === 2. MIDDLE CONTENT AREA === -->
+            <main class="col-span-10 md:col-span-5 main-content-area bg-white">
+
+                <!-- === HOME VIEW (Feed & Community Tabs) === -->
+                <div id="homeView" role="region" aria-labelledby="home-heading">
+                    <!-- Sticky Header -->
+                    <div class="sticky-header px-4 py-3 border-b border-gray-200">
+                        <h1 id="home-heading" class="text-xl font-bold">Home</h1>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="border-b border-gray-200">
+                        <nav class="flex -mb-px" role="tablist" aria-label="Home Tabs">
+                            <button id="feedTabButton" class="tab-link active w-1/2 py-4 px-1 text-center transition-colors duration-200" role="tab" aria-selected="true" aria-controls="feedTabPanel">
+                                For You
+                            </button>
+                            <button id="communityTabButton" class="tab-link w-1/2 py-4 px-1 text-center transition-colors duration-200" role="tab" aria-selected="false" aria-controls="communityTabPanel">
+                                Community Projects
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- "For You" Feed Tab Panel -->
+                    <div id="feedTabPanel" role="tabpanel" aria-labelledby="feedTabButton">
+                        <!-- Create Post Section -->
+                        <div id="createPostSection" class="p-4 border-b border-gray-200">
+                             <div class="flex space-x-3">
+                                <img id="currentUserAvatarPost" src="https://placehold.co/48x48/E0E7FF/4338CA?text=CU" alt="Your Avatar" class="w-12 h-12 rounded-full">
+                                <div class="w-full">
+                                    <textarea id="postTextarea" class="w-full p-2 text-lg border-none focus:ring-0 rounded-lg" rows="3" placeholder="What's on your mind?"></textarea>
+                                    <p id="geminiError" class="text-red-600 text-sm mt-1 hidden"></p>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <div>
+                                            <button id="generatePostButton" type="button" class="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-100 transition-colors" aria-label="Generate post with AI">
+                                                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                                            </button>
+                                        </div>
+                                        <button id="submitPostButton" class="bg-blue-600 text-white py-2 px-5 rounded-full font-bold hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50" disabled>
+                                            Post
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Feed Container -->
+                        <div id="feedContainer">
+                            <!-- Posts dynamically injected -->
+                        </div>
+                    </div>
+
+                    <!-- Community Projects Tab Panel -->
+                    <div id="communityTabPanel" class="hidden" role="tabpanel" aria-labelledby="communityTabButton">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold">All Projects</h2>
+                            <button id="createProjectButton" class="bg-blue-600 text-white py-2 px-4 rounded-full font-semibold text-sm hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                                <span>Create Project</span>
+                            </button>
+                        </div>
+                        <div id="projectListContainer" class="p-4 space-y-4">
+                            <!-- Projects dynamically injected -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === PROFILE VIEW (Dashboard) === -->
+                <div id="profileView" class="hidden" role="region" aria-labelledby="profile-heading">
+                    <!-- Profile Header -->
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <div class="flex items-start space-x-4">
+                            <img id="profileAvatar" src="https://placehold.co/96x96/E0E7FF/4338CA?text=P" alt="Profile Avatar" class="w-24 h-24 rounded-full border-4 border-white shadow-lg flex-shrink-0">
+                            <div class="flex-grow min-w-0">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <h2 id="profileName" class="text-3xl font-bold text-gray-900 truncate">User Name</h2>
+                                    <span id="profileVerifiedBadge" class="verified-badge hidden" title="Verified User">
+                                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                                    </span>
+                                </div>
+                                <p id="profileUsername" class="text-lg text-gray-500">@username</p>
+                                <!-- LinkedIn Link -->
+                                <a id="profileLinkedInLink" href="#" target="_blank" rel="noopener noreferrer" class="mt-2 text-gray-500 hover:text-blue-600 inline-flex items-center space-x-1 hidden">
+                                     <i data-lucide="linkedin" class="w-4 h-4"></i>
+                                     <span class="text-sm">LinkedIn</span>
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Stats -->
+                        <div class="flex justify-start space-x-8 mt-6">
+                            <div>
+                                <p id="profilePostCount" class="font-bold text-xl text-gray-900">0</p>
+                                <p class="text-gray-500 text-sm">Posts</p>
+                            </div>
+                            <div>
+                                <p id="profileFollowers" class="font-bold text-xl text-gray-900">0</p>
+                                <p class="text-gray-500 text-sm">Followers</p>
+                            </div>
+                            <div>
+                                <p id="profileFollowing" class="font-bold text-xl text-gray-900">0</p>
+                                <p class="text-gray-500 text-sm">Following</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Tabs -->
+                    <div class="border-b border-gray-200">
+                        <nav class="flex -mb-px" role="tablist" aria-label="Profile Tabs">
+                            <button id="profilePostsTab" class="tab-link active w-1/2 py-4 px-1 text-center transition-colors duration-200" role="tab" aria-selected="true" aria-controls="profilePostsView">
+                                Posts
+                            </button>
+                            <button id="profileProjectsTab" class="tab-link w-1/2 py-4 px-1 text-center transition-colors duration-200" role="tab" aria-selected="false" aria-controls="profileProjectsView">
+                                Projects
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Profile Content -->
+                    <div id="profilePostsView" role="tabpanel" aria-labelledby="profilePostsTab">
+                        <!-- User's posts injected -->
+                    </div>
+                    <div id="profileProjectsView" class="hidden p-4 space-y-4" role="tabpanel" aria-labelledby="profileProjectsTab">
+                        <!-- User's projects injected -->
+                    </div>
+                </div>
+
+                 <!-- === MATCH VIEW === -->
+                <div id="matchView" class="hidden" role="region" aria-labelledby="match-heading">
+                    <div class="sticky-header p-4 border-b border-gray-200">
+                        <h2 id="match-heading" class="text-xl font-bold">Match Collaborators</h2>
+                        <p class="text-sm text-gray-600">Find users by skills, credits, and location.</p>
+                    </div>
+                    <div class="p-4 space-y-4 border-b border-gray-200">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="skillsFilterInput" class="block text-sm font-medium text-gray-700">Skills (comma-sep.)</label>
+                                <input type="text" id="skillsFilterInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="e.g., React, Python">
+                            </div>
+                            <div>
+                                <label for="locationFilterInput" class="block text-sm font-medium text-gray-700">Location</label>
+                                <div class="flex mt-1">
+                                    <input type="text" id="locationFilterInput" class="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="e.g., New York">
+                                    <button id="scanLocationButton" class="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 text-gray-500 hover:bg-gray-100" title="Use My Location" aria-label="Use My Location">
+                                        <i data-lucide="navigation" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="findMatchesButton" class="w-full bg-blue-600 text-white py-2 px-4 rounded-full font-semibold hover:bg-blue-700 transition-colors">
+                            Find Matches
+                        </button>
+                    </div>
+                    <div id="matchResultsContainer" class="p-4 space-y-3">
+                        <p class="text-center text-gray-500">Enter filters to see results.</p>
+                    </div>
+                </div>
+
+                <!-- === CREDITS VIEW === -->
+                <div id="creditsView" class="hidden" role="region" aria-labelledby="credits-heading">
+                    <div class="sticky-header p-4 border-b border-gray-200">
+                        <h2 id="credits-heading" class="text-xl font-bold">Credits & Rewards</h2>
+                    </div>
+                    <div class="border-b border-gray-200">
+                        <nav class="flex -mb-px" role="tablist" aria-label="Credits Tabs">
+                            <button id="creditsStoreTabButton" class="tab-link active w-1/2 py-4 px-1 text-center" role="tab" aria-selected="true" aria-controls="creditsStoreView">My Credits & Store</button>
+                            <button id="creditsLeaderboardTabButton" class="tab-link w-1/2 py-4 px-1 text-center" role="tab" aria-selected="false" aria-controls="creditsLeaderboardView">Leaderboards</button>
+                        </nav>
+                    </div>
+                    <div id="creditsStoreView" role="tabpanel">
+                         <div class="p-4 grid grid-cols-2 gap-4 border-b border-gray-200">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <p class="text-sm font-medium text-blue-700">Your Credits</p>
+                                <p id="userCreditsDisplay" class="text-3xl font-bold text-blue-900">0</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                                <p class="text-sm font-medium text-yellow-700">Your Avg. Rating</p>
+                                <p id="userRatingDisplay" class="text-3xl font-bold text-yellow-900">0.0</p>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold mb-3">Store</h3>
+                            <div class="grid grid-cols-2 gap-4" id="storeItemsContainer">
+                                <!-- Store items injected -->
+                            </div>
+                        </div>
+                    </div>
+                    <div id="creditsLeaderboardView" class="hidden" role="tabpanel">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold mb-3">Project Leaderboard (by Rating)</h3>
+                            <div id="projectLeaderboardContainer" class="space-y-3">
+                                <!-- Leaderboard injected -->
+                            </div>
+                        </div>
+                        <div class="p-4 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold mb-3">User Leaderboard (by Credits)</h3>
+                            <div id="userLeaderboardContainer" class="space-y-3">
+                                <!-- Leaderboard injected -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === COURSES VIEW === -->
+                <div id="coursesView" class="hidden" role="region" aria-labelledby="courses-heading">
+                    <div class="sticky-header p-4 border-b border-gray-200">
+                        <h2 id="courses-heading" class="text-xl font-bold">Available Courses</h2>
+                        <p class="text-sm text-gray-600">Use credits to purchase courses.</p>
+                    </div>
+                    <div id="courseListContainer" class="p-4 space-y-4">
+                        <!-- Courses injected -->
+                    </div>
+                </div>
+
+                 <!-- === SCHEDULES VIEW === -->
+                <div id="schedulesView" class="hidden" role="region" aria-labelledby="schedules-heading">
+                    <div class="sticky-header p-4 border-b border-gray-200">
+                        <h2 id="schedules-heading" class="text-xl font-bold">Schedules</h2>
+                    </div>
+                    <div class="p-4">
+                        <!-- Calendar -->
+                        <div class="mb-6 bg-white p-4 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <button id="prevMonthBtn" aria-label="Previous month"><i data-lucide="chevron-left"></i></button>
+                                <h3 id="calendarMonthYear" class="text-lg font-semibold">October 2025</h3>
+                                <button id="nextMonthBtn" aria-label="Next month"><i data-lucide="chevron-right"></i></button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 mb-2">
+                                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                            </div>
+                            <div id="calendarGrid" class="calendar-grid">
+                                <!-- Calendar days injected -->
+                            </div>
+                        </div>
+
+                        <!-- Daily Schedule -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Tasks -->
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <h4 class="font-semibold mb-3">Tasks for <span id="selectedDateTasks">Oct 26</span></h4>
+                                <ul id="taskList" class="space-y-2 mb-3 text-sm">
+                                    <li>Complete project proposal</li>
+                                    <li>Schedule team meeting</li>
+                                </ul>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="newTaskInput" placeholder="Add new task..." class="flex-grow p-2 border rounded-md text-sm">
+                                    <button id="addTaskBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                            <!-- Meetings -->
+                            <div class="bg-gray-50 p-4 rounded-lg border">
+                                <h4 class="font-semibold mb-3">Meetings for <span id="selectedDateMeetings">Oct 26</span></h4>
+                                <ul id="meetingList" class="space-y-2 text-sm">
+                                    <li>10:00 AM - Standup (@alice_j, @bob_smith_dev)</li>
+                                    <li>02:30 PM - Design Review (@charlie_lee)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- === SETTINGS VIEW === -->
+                <div id="settingsView" class="hidden" role="region" aria-labelledby="settings-heading">
+                    <div class="sticky-header p-4 border-b border-gray-200">
+                        <h2 id="settings-heading" class="text-xl font-bold">Accessibility Settings</h2>
+                        <p class="text-sm text-gray-600">Manage viewing experience.</p>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <!-- Dark Mode -->
+                        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border">
+                            <div>
+                                <label for="darkModeToggle" class="font-semibold">Dark Mode</label>
+                                <p class="text-sm text-gray-600">Reduces eye strain.</p>
+                            </div>
+                            <button id="darkModeToggle" role="switch" aria-checked="false" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                            </button>
+                        </div>
+                        <!-- High Contrast -->
+                         <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border">
+                            <div>
+                                <label for="highContrastToggle" class="font-semibold">High Contrast</label>
+                                <p class="text-sm text-gray-600">Increases text contrast.</p>
+                            </div>
+                             <button id="highContrastToggle" role="switch" aria-checked="false" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                            </button>
+                        </div>
+                        <!-- Colorblind Mode -->
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label for="colorblindModeSelect" class="block font-semibold">Colorblind Mode</label>
+                            <p class="text-sm text-gray-600 mb-2">Adjust colors.</p>
+                            <select id="colorblindModeSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                                <option value="none">Off</option>
+                                <option value="protanopia">Protanopia (Red-Green)</option>
+                                <option value="deuteranopia">Deuteranopia (Red-Green)</option>
+                                <option value="tritanopia">Tritanopia (Blue-Yellow)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- === 3. RIGHT SIDEBAR === -->
+            <aside class="col-span-3 sticky top-0 h-screen p-4 pl-6 hidden md:block space-y-4 bg-gray-50 overflow-y-auto">
+                 <!-- User Dashboard -->
+                <div class="bg-gray-100 rounded-xl p-4">
+                    <h2 class="font-bold text-lg mb-4 text-gray-900">Dashboard</h2>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img id="dashboardUserAvatar" src="https://placehold.co/48x48/E0E7FF/4338CA?text=CU" alt="Your Avatar" class="w-12 h-12 rounded-full">
+                        <div>
+                            <p id="dashboardUserName" class="font-bold text-gray-900"></p>
+                            <p id="dashboardUserUsername" class="text-gray-500 text-sm"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-around text-center">
+                        <div>
+                            <p id="dashboardUserPosts" class="font-bold text-lg text-gray-900">0</p>
+                            <p class="text-gray-500 text-sm">Posts</p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-lg text-gray-900">148</p>
+                            <p class="text-gray-500 text-sm">Followers</p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-lg text-gray-900">72</p>
+                            <p class="text-gray-500 text-sm">Following</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="bg-gray-100 rounded-xl p-4">
+                    <h2 class="font-bold text-lg mb-4 text-gray-900">Messages</h2>
+                    <ul class="space-y-3">
+                         <li class="flex items-center space-x-3 cursor-pointer hover:bg-gray-200 p-2 rounded-lg" role="button" tabindex="0">
+                            <img src="https://placehold.co/40x40/D1FAE5/065F46?text=JA" alt="Avatar" class="w-10 h-10 rounded-full">
+                            <div>
+                                <p class="font-semibold text-sm text-gray-900">Jane Doe</p>
+                                <p class="text-gray-600 text-sm truncate">Hey, did you see my proposal?</p>
+                            </div>
+                        </li>
+                         <li class="flex items-center space-x-3 cursor-pointer hover:bg-gray-200 p-2 rounded-lg" role="button" tabindex="0">
+                            <img src="https://placehold.co/40x40/FEF3C7/92400E?text=MK" alt="Avatar" class="w-10 h-10 rounded-full">
+                            <div>
+                                <p class="font-semibold text-sm text-gray-900">Michael K.</p>
+                                <p class="text-gray-600 text-sm truncate">Let's catch up later today.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-center space-x-3 cursor-pointer hover:bg-gray-200 p-2 rounded-lg" role="button" tabindex="0">
+                            <img src="https://placehold.co/40x40/FEE2E2/991B1B?text=AM" alt="Avatar" class="w-10 h-10 rounded-full">
+                            <div>
+                                <p class="font-semibold text-sm text-gray-900">Alex Smith</p>
+                                <p class="text-gray-600 text-sm truncate">Awesome, thanks!</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Suggested for you -->
+                <div class="bg-gray-100 rounded-xl p-4">
+                    <h2 class="font-bold text-lg mb-4 text-gray-900">Suggested for you</h2>
+                    <ul class="space-y-3">
+                        <li class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://placehold.co/40x40/D1FAE5/065F46?text=JA" alt="Avatar" class="w-10 h-10 rounded-full">
+                                <div>
+                                    <p class="font-semibold text-sm text-gray-900">Jane Doe</p>
+                                    <p class="text-gray-600 text-sm">@jane_doe</p>
+                                </div>
+                            </div>
+                            <button class="bg-black text-white text-sm font-semibold py-1.5 px-4 rounded-full hover:bg-gray-800">Follow</button>
+                        </li>
+                         <li class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://placehold.co/40x40/FEE2E2/991B1B?text=AM" alt="Avatar" class="w-10 h-10 rounded-full">
+                                <div>
+                                    <p class="font-semibold text-sm text-gray-900">Alex Smith</p>
+                                    <p class="text-gray-600 text-sm">@alex_smith</p>
+                                </div>
+                            </div>
+                            <button class="bg-black text-white text-sm font-semibold py-1.5 px-4 rounded-full hover:bg-gray-800">Follow</button>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- === REVIEW MODAL === -->
+    <div id="reviewModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 hidden opacity-0" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div id="reviewModalPanel" class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md transform scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modal-title" class="text-xl font-bold text-gray-900 dark:text-gray-100">Review Project</h2>
+                <button id="closeModalButton" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" aria-label="Close modal">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <h3 id="modalProjectTitle" class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-4">Project Title Here</h3>
+
+            <!-- Star Rating -->
+            <div class="mb-4">
+                <p class="font-medium mb-2 text-gray-900 dark:text-gray-100">Your Rating</p>
+                <div id="modalStarContainer" class="flex space-x-1 cursor-pointer" role="radiogroup" aria-label="Star rating">
+                    <button class="star-btn" data-value="1" role="radio" aria-label="1 star" aria-checked="false"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+                    <button class="star-btn" data-value="2" role="radio" aria-label="2 stars" aria-checked="false"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+                    <button class="star-btn" data-value="3" role="radio" aria-label="3 stars" aria-checked="false"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+                    <button class="star-btn" data-value="4" role="radio" aria-label="4 stars" aria-checked="false"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+                    <button class="star-btn" data-value="5" role="radio" aria-label="5 stars" aria-checked="false"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+                </div>
+                <p id="starRatingError" class="text-red-600 text-sm mt-1 hidden">Please select a rating.</p>
+            </div>
+
+            <!-- Review Text -->
+            <div class="mb-6">
+                <label for="reviewText" class="font-medium mb-2 block text-gray-900 dark:text-gray-100">Your Feedback</label>
+                <textarea id="reviewText" rows="4" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100" placeholder="What did you like? What could be improved?"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="submitReviewButton" class="w-full bg-blue-600 text-white py-3 px-6 rounded-full font-bold text-lg hover:bg-blue-700 transition-colors duration-200">
+                Submit Review
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        // Immediately-invoked function expression (IIFE)
+        (function() {
+
+            // --- 1. STATE & DATA ---
+
+             const currentUser = {
+                id: "u1",
+                name: "Current User",
+                username: "current_user",
+                avatar: "https://placehold.co/40x40/E0E7FF/4338CA?text=CU",
+                avatarLarge: "https://placehold.co/96x96/E0E7FF/4338CA?text=CU", // Larger avatar for profile
+                avatarPost: "https://placehold.co/48x48/E0E7FF/4338CA?text=CU", // Avatar for posts
+                location: "San Francisco, CA",
+                skills: ["JavaScript", "HTML", "CSS", "React"],
+                credits: 125.5,
+                averageRating: 4.7,
+                purchasedCourses: new Set(['course1']), // User already owns this course
+                followers: 148, // Example stat
+                following: 72,   // Example stat
+                isVerified: true, // Verification status
+                linkedInUrl: "https://linkedin.com/in/exampleuser" // Example LinkedIn URL
+            };
+
+            const mockPosts = [
+                {
+                    id: "p1",
+                    isOwnPost: false,
+                    user: { name: "Alice Johnson", username: "alice_j", avatar: "https://placehold.co/48x48/FEE2E2/991B1B?text=AJ" },
+                    content: "Excited to start my new journey learning React! Any tips for a beginner? #react #javascript #coding",
+                    timestamp: "1h ago", interactions: { raises: 28, spreads: 5, points: 12 }
+                },
+                {
+                    id: "p3", // User's post
+                    isOwnPost: true,
+                    user: { name: currentUser.name, username: currentUser.username, avatar: currentUser.avatarPost },
+                    content: "Just setting up my Skills Connect profile! Excited to connect with other developers and learn new skills. #newhere #webdev",
+                    timestamp: "2h ago", interactions: { raises: 12, spreads: 2, points: 4 }
+                },
+                 {
+                    id: "p2",
+                    isOwnPost: false,
+                    user: { name: "Bob Smith", username: "bob_smith_dev", avatar: "https://placehold.co/48x48/D1FAE5/065F46?text=BS" },
+                    content: "Just pushed my new project 'EcoTrack' to GitHub! It’s a tool for tracking personal carbon footprints. Check it out! #opensource #sustainability #python",
+                    timestamp: "3h ago", interactions: { raises: 45, spreads: 18, points: 7 }
+                }
+            ];
+
+            const mockProjects = [
+                { id: "proj1", title: "EcoTrack - Carbon Footprint Tracker", author: "bob_smith_dev", description: "Python app for tracking carbon footprint.", credits: 150.5, rating: 4.5, ratingCount: 20 },
+                { id: "proj2", title: "React Portfolio Generator", author: "alice_j", description: "Generate a portfolio from JSON.", credits: 280.0, rating: 4.8, ratingCount: 35 },
+                { id: "proj3", title: "Community Garden Planner", author: "m_k_dev", description: "Mobile-first app for garden coordination.", credits: 90.0, rating: 4.2, ratingCount: 12 },
+                 { id: "proj4", title: "My Awesome Project", author: currentUser.username, description: "Working on a new side project!", credits: 15.0, rating: 4.9, ratingCount: 3 }, // User's project
+            ];
+
+            const mockUsers = [ // Full data for other users, including profile info
+                { id: "u2", name: "Alice Johnson", username: "alice_j", avatar: "https://placehold.co/40x40/FEE2E2/991B1B?text=AJ", avatarLarge: "https://placehold.co/96x96/FEE2E2/991B1B?text=AJ", location: "New York, NY", skills: ["React", "JavaScript", "Node.js"], credits: 140, averageRating: 4.8, followers: 210, following: 95, isVerified: true, linkedInUrl: null }, // Alice is verified
+                { id: "u3", name: "Bob Smith", username: "bob_smith_dev", avatar: "https://placehold.co/40x40/D1FAE5/065F46?text=BS", avatarLarge: "https://placehold.co/96x96/D1FAE5/065F46?text=BS", location: "London, UK", skills: ["Python", "Data Science", "SQL"], credits: 300, averageRating: 4.5, followers: 350, following: 120, isVerified: false, linkedInUrl: "https://linkedin.com/in/bobsmith" }, // Bob not verified, has LinkedIn
+                { id: "u4", name: "Charlie Lee", username: "charlie_lee", avatar: "https://placehold.co/40x40/FEF3C7/92400E?text=CL", avatarLarge: "https://placehold.co/96x96/FEF3C7/92400E?text=CL", location: "San Francisco, CA", skills: ["JavaScript", "Vue.js", "Firebase"], credits: 100, averageRating: 4.2, followers: 80, following: 40, isVerified: false, linkedInUrl: null }, // Charlie not verified
+                { id: "u5", name: "Michael K.", username: "m_k_dev", avatar: "https://placehold.co/40x40/FEF3C7/92400E?text=MK", avatarLarge: "https://placehold.co/96x96/FEF3C7/92400E?text=MK", location: "Austin, TX", skills: ["Firebase", "JavaScript", "Mobile Dev"], credits: 110, averageRating: 4.3, followers: 95, following: 60, isVerified: true, linkedInUrl: "https://linkedin.com/in/michaelk" } // Michael verified, has LinkedIn
+            ];
+
+            let allPosts = [...mockPosts]; // Initial posts
+            let allProjects = [...mockProjects]; // Initial projects
+            const allUsers = [currentUser, ...mockUsers]; // All users for profile lookups
+
+            let userInteractions = { raised: new Set(), spread: new Set() };
+            let currentReviewProjectId = null;
+            let currentReviewStars = 0;
+            let currentCalendarDate = new Date(2025, 9, 26); // October 26, 2025
+
+             // Mock daily data (simple example)
+            const dailyData = {
+                "2025-10-25": { tasks: ["Review PRs"], meetings: ["11:00 AM - Catch up (@jane_doe)"] },
+                "2025-10-26": { tasks: ["Complete project proposal", "Schedule team meeting"], meetings: ["10:00 AM - Standup (@alice_j)", "02:30 PM - Design Review (@charlie_lee)"] },
+                "2025-10-27": { tasks: ["Deploy feature X", "Write documentation"], meetings: ["09:00 AM - Planning Session"] }
+            };
+
+            const mockStoreItems = [
+                { id: 'item1', name: 'Premium Badge', price: 150, icon: 'shield-check' },
+                { id: 'item2', name: 'Project Boost', price: 100, icon: 'trending-up' },
+                { id: 'item3', name: 'Avatar Pack', price: 75, icon: 'smile' },
+                { id: 'item4', name: 'Premium Access', price: 500, icon: 'zap' }
+            ];
+
+            const mockCourses = [
+                { id: 'course1', title: 'Advanced JavaScript', instructor: 'alice_j', description: 'Deep dive into modern JS.', price: 200, rating: 4.9, ratingCount: 150 },
+                { id: 'course2', title: 'Data Science with Python', instructor: 'bob_smith_dev', description: 'Learn Pandas, NumPy, Scikit-learn.', price: 350, rating: 4.8, ratingCount: 210 },
+                { id: 'course3', title: 'UI/UX Fundamentals', instructor: 'charlie_lee', description: 'From wireframing to prototypes.', price: 150, rating: 4.7, ratingCount: 120 }
+            ];
+
+            let appSettings = { darkMode: false, highContrast: false, colorblindMode: 'none' };
+
+
+            // --- 2. DOM ELEMENTS ---
+            // Navigation & Views
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navHomeButton = document.getElementById('navHomeButton');
+            const navCommunityButton = document.getElementById('navCommunityButton');
+            const navMatchButton = document.getElementById('navMatchButton');
+            const navSchedulesButton = document.getElementById('navSchedulesButton');
+            const navCreditsButton = document.getElementById('navCreditsButton');
+            const navCoursesButton = document.getElementById('navCoursesButton');
+            const navSettingsButton = document.getElementById('navSettingsButton');
+            const navDashboardButton = document.getElementById('navDashboardButton');
+
+            const homeView = document.getElementById('homeView');
+            const profileView = document.getElementById('profileView');
+            const matchView = document.getElementById('matchView');
+            const creditsView = document.getElementById('creditsView');
+            const coursesView = document.getElementById('coursesView');
+            const schedulesView = document.getElementById('schedulesView');
+            const settingsView = document.getElementById('settingsView');
+            const allViews = [homeView, profileView, matchView, creditsView, coursesView, schedulesView, settingsView];
+
+            // Home View Elements
+            const feedTabButton = document.getElementById('feedTabButton');
+            const communityTabButton = document.getElementById('communityTabButton');
+            const feedTabPanel = document.getElementById('feedTabPanel');
+            const communityTabPanel = document.getElementById('communityTabPanel');
+            const createPostSection = document.getElementById('createPostSection');
+            const feedContainer = document.getElementById('feedContainer');
+            const projectListContainer = document.getElementById('projectListContainer');
+            const currentUserAvatarPost = document.getElementById('currentUserAvatarPost');
+            const postTextarea = document.getElementById('postTextarea');
+            const generatePostButton = document.getElementById('generatePostButton');
+            const submitPostButton = document.getElementById('submitPostButton');
+            const geminiError = document.getElementById('geminiError');
+
+            // Profile View Elements
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileName = document.getElementById('profileName');
+            const profileUsername = document.getElementById('profileUsername');
+            const profileVerifiedBadge = document.getElementById('profileVerifiedBadge'); // New
+            const profileLinkedInLink = document.getElementById('profileLinkedInLink'); // New
+            const profilePostCount = document.getElementById('profilePostCount');
+            const profileFollowers = document.getElementById('profileFollowers');
+            const profileFollowing = document.getElementById('profileFollowing');
+            const profilePostsTab = document.getElementById('profilePostsTab');
+            const profileProjectsTab = document.getElementById('profileProjectsTab');
+            const profilePostsView = document.getElementById('profilePostsView');
+            const profileProjectsView = document.getElementById('profileProjectsView');
+
+            // Match View Elements
+            const skillsFilterInput = document.getElementById('skillsFilterInput');
+            const locationFilterInput = document.getElementById('locationFilterInput');
+            const scanLocationButton = document.getElementById('scanLocationButton');
+            const findMatchesButton = document.getElementById('findMatchesButton');
+            const matchResultsContainer = document.getElementById('matchResultsContainer');
+
+            // Credits View Elements
+            const creditsStoreTabButton = document.getElementById('creditsStoreTabButton');
+            const creditsLeaderboardTabButton = document.getElementById('creditsLeaderboardTabButton');
+            const creditsStoreView = document.getElementById('creditsStoreView');
+            const creditsLeaderboardView = document.getElementById('creditsLeaderboardView');
+            const userCreditsDisplay = document.getElementById('userCreditsDisplay');
+            const userRatingDisplay = document.getElementById('userRatingDisplay');
+            const storeItemsContainer = document.getElementById('storeItemsContainer');
+            const projectLeaderboardContainer = document.getElementById('projectLeaderboardContainer');
+            const userLeaderboardContainer = document.getElementById('userLeaderboardContainer');
+
+            // Courses View Elements
+            const courseListContainer = document.getElementById('courseListContainer');
+
+            // Schedules View Elements
+            const prevMonthBtn = document.getElementById('prevMonthBtn');
+            const nextMonthBtn = document.getElementById('nextMonthBtn');
+            const calendarMonthYear = document.getElementById('calendarMonthYear');
+            const calendarGrid = document.getElementById('calendarGrid');
+            const selectedDateTasks = document.getElementById('selectedDateTasks');
+            const selectedDateMeetings = document.getElementById('selectedDateMeetings');
+            const taskList = document.getElementById('taskList');
+            const meetingList = document.getElementById('meetingList');
+            const newTaskInput = document.getElementById('newTaskInput');
+            const addTaskBtn = document.getElementById('addTaskBtn');
+
+            // Settings View Elements
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const highContrastToggle = document.getElementById('highContrastToggle');
+            const colorblindModeSelect = document.getElementById('colorblindModeSelect');
+
+            // Sidebar Elements
+            const currentUserCard = document.getElementById('currentUserCard');
+            const dashboardUserAvatar = document.getElementById('dashboardUserAvatar');
+            const dashboardUserName = document.getElementById('dashboardUserName');
+            const dashboardUserUsername = document.getElementById('dashboardUserUsername');
+            const dashboardUserPosts = document.getElementById('dashboardUserPosts');
+
+            // Modal Elements
+            const modalOverlay = document.getElementById('reviewModalOverlay');
+            const modalPanel = document.getElementById('reviewModalPanel');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const modalProjectTitle = document.getElementById('modalProjectTitle');
+            const modalStarContainer = document.getElementById('modalStarContainer');
+            const modalStars = modalStarContainer.querySelectorAll('.star-btn');
+            const reviewText = document.getElementById('reviewText');
+            const submitReviewButton = document.getElementById('submitReviewButton');
+            const starRatingError = document.getElementById('starRatingError');
+
+
+            // --- 3. RENDER FUNCTIONS ---
+
+            function createPostElement(post) {
+                const element = document.createElement('article');
+                element.className = 'p-4 border-b border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200';
+                const isRaised = userInteractions.raised.has(post.id);
+                const isSpread = userInteractions.spread.has(post.id);
+                element.innerHTML = `
+                    <div class="flex space-x-3">
+                        <img src="${post.user.avatar || 'https://placehold.co/48x48/cccccc/333333?text=?'}" alt="${post.user.name}'s avatar" class="w-12 h-12 rounded-full flex-shrink-0">
+                        <div class="w-full min-w-0">
+                             <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-1 flex-wrap text-sm">
+                                    <a href="#" class="font-bold hover:underline user-profile-link" data-username="${post.user.username}">${post.user.name}</a>
+                                    <span class="text-gray-500 dark:text-gray-400">@${post.user.username}</span>
+                                    <span class="text-gray-500 dark:text-gray-400">&middot; ${post.timestamp}</span>
+                                </div>
+                                ${post.isOwnPost ? `
+                                <button class="delete-post-btn text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50" data-post-id="${post.id}" aria-label="Delete post">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                                ` : ''}
+                            </div>
+                            <p class="my-2 text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words">${post.content}</p>
+                            <div class="flex justify-between max-w-xs sm:max-w-sm mt-3 text-xs">
+                                <button class="interaction-btn text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 flex items-center space-x-1 group" data-post-id="${post.id}" data-type="points" aria-label="Comment">
+                                    <div class="p-2 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50"><i data-lucide="message-circle" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                                    <span class="group-hover:text-blue-500 dark:group-hover:text-blue-400">${post.interactions.points}</span>
+                                </button>
+                                <button class="interaction-btn ${isSpread ? 'text-green-500 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'} hover:text-green-500 dark:hover:text-green-400 flex items-center space-x-1 group" data-post-id="${post.id}" data-type="spread" aria-label="Spread">
+                                    <div class="p-2 rounded-full group-hover:bg-green-100 dark:group-hover:bg-green-900/50"><i data-lucide="repeat" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                                    <span class="${isSpread ? 'text-green-500 dark:text-green-400' : ''} group-hover:text-green-500 dark:group-hover:text-green-400">${post.interactions.spreads}</span>
+                                </button>
+                                <button class="interaction-btn ${isRaised ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'} hover:text-red-500 dark:hover:text-red-400 flex items-center space-x-1 group" data-post-id="${post.id}" data-type="raise" aria-label="Raise">
+                                    <div class="p-2 rounded-full group-hover:bg-red-100 dark:group-hover:bg-red-900/50"><i data-lucide="heart" class="w-4 h-4 sm:w-5 sm:h-5 ${isRaised ? 'fill-current' : ''}"></i></div>
+                                    <span class="${isRaised ? 'text-red-500 dark:text-red-400' : ''} group-hover:text-red-500 dark:group-hover:text-red-400">${post.interactions.raises}</span>
+                                </button>
+                                <button class="interaction-btn text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 flex items-center space-x-1 group" data-post-id="${post.id}" data-type="share" aria-label="Share">
+                                    <div class="p-2 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50"><i data-lucide="share-2" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                return element;
+            }
+
+            function renderAllPosts() {
+                feedContainer.innerHTML = '';
+                allPosts.forEach(post => feedContainer.appendChild(createPostElement(post)));
+                lucide.createIcons();
+            }
+
+            function createProjectElement(project) {
+                const element = document.createElement('div');
+                element.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md transition-shadow';
+                element.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-bold text-blue-700 dark:text-blue-400 hover:underline cursor-pointer">${project.title}</h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">by <a href="#" class="user-profile-link hover:underline" data-username="${project.author}">@${project.author}</a></span>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 my-2 text-sm">${project.description}</p>
+                    <div class="flex justify-between items-center mt-3">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
+                            <span class="flex items-center text-gray-600 dark:text-gray-400">
+                                <i data-lucide="credit-card" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-green-600 dark:text-green-400"></i>
+                                <strong>${project.credits.toFixed(1)}</strong>&nbsp;Credits
+                            </span>
+                            <span class="flex items-center text-gray-600 dark:text-gray-400">
+                                <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-yellow-500 fill-current"></i>
+                                <strong>${project.rating}</strong>&nbsp;(${project.ratingCount})
+                            </span>
+                        </div>
+                        <button class="review-project-btn bg-black dark:bg-gray-700 text-white text-xs sm:text-sm font-semibold py-1.5 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors" data-project-id="${project.id}">
+                            Review
+                        </button>
+                    </div>`;
+                return element;
+            }
+
+            function renderProjects() {
+                projectListContainer.innerHTML = '';
+                allProjects.forEach(project => projectListContainer.appendChild(createProjectElement(project)));
+                lucide.createIcons();
+            }
+
+             function renderMatches(matches) {
+                matchResultsContainer.innerHTML = '';
+                if (matches.length === 0) {
+                    matchResultsContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">No matches found.</p>`; return;
+                }
+                matches.forEach(user => {
+                    const element = document.createElement('div');
+                    element.className = 'flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600';
+                    const verifiedBadgeHtml = user.isVerified ? `<span class="verified-badge ml-1" title="Verified"><i data-lucide="check-circle" class="w-4 h-4 inline"></i></span>` : '';
+                    element.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <img src="${user.avatar}" alt="${user.name}'s avatar" class="w-10 h-10 rounded-full">
+                            <div>
+                                <p class="font-semibold text-sm flex items-center">${user.name}${verifiedBadgeHtml}</p>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm"><a href="#" class="user-profile-link hover:underline" data-username="${user.username}">@${user.username}</a></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4 text-xs">
+                             <span class="text-gray-500 dark:text-gray-400 flex items-center"><i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1"></i>${user.location}</span>
+                            <span class="text-gray-500 dark:text-gray-400 flex items-center"><i data-lucide="credit-card" class="w-3.5 h-3.5 mr-1 text-green-600 dark:text-green-400"></i>${user.credits}</span>
+                            <button class="bg-black dark:bg-gray-600 text-white text-xs font-semibold py-1 px-3 rounded-full hover:bg-gray-800 dark:hover:bg-gray-500">Connect</button>
+                        </div>`;
+                    matchResultsContainer.appendChild(element);
+                });
+                lucide.createIcons();
+            }
+
+             function renderStoreItems() {
+                storeItemsContainer.innerHTML = '';
+                mockStoreItems.forEach(item => {
+                    const canAfford = currentUser.credits >= item.price;
+                    const element = document.createElement('div');
+                    element.className = 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col justify-between';
+                    element.innerHTML = `
+                        <div>
+                            <i data-lucide="${item.icon}" class="w-8 h-8 mb-2 text-blue-600 dark:text-blue-400"></i>
+                            <p class="font-semibold text-sm">${item.name}</p>
+                        </div>
+                        <button class="buy-item-btn w-full text-xs sm:text-sm font-semibold py-2 px-3 rounded-full mt-3 ${canAfford ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'}" data-price="${item.price}" ${!canAfford ? 'disabled' : ''}>
+                            Buy (${item.price} cr)
+                        </button>`;
+                    storeItemsContainer.appendChild(element);
+                });
+                lucide.createIcons();
+            }
+
+             function renderLeaderboards() {
+                projectLeaderboardContainer.innerHTML = '';
+                [...allProjects].sort((a, b) => b.rating - a.rating).slice(0, 5).forEach((proj, i) => { // Show top 5
+                    const element = document.createElement('div');
+                    element.className = 'flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm';
+                    element.innerHTML = `
+                        <div class="flex items-center space-x-2 min-w-0">
+                            <span class="font-bold text-gray-500 dark:text-gray-400 w-5">${i + 1}.</span>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-blue-700 dark:text-blue-400 hover:underline cursor-pointer truncate">${proj.title}</p>
+                                <p class="text-gray-600 dark:text-gray-400 text-xs">by <a href="#" class="user-profile-link hover:underline" data-username="${proj.author}">@${proj.author}</a></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-xs text-gray-600 dark:text-gray-400 flex-shrink-0 ml-2">
+                            <i data-lucide="star" class="w-3.5 h-3.5 mr-0.5 text-yellow-500 fill-current"></i>
+                            <strong>${proj.rating}</strong>&nbsp;(${proj.ratingCount})
+                        </div>`;
+                    projectLeaderboardContainer.appendChild(element);
+                });
+
+                userLeaderboardContainer.innerHTML = '';
+                 [...allUsers].sort((a, b) => b.credits - a.credits).slice(0, 5).forEach((user, i) => { // Show top 5
+                    const element = document.createElement('div');
+                    const verifiedBadgeHtml = user.isVerified ? `<span class="verified-badge ml-1" title="Verified"><i data-lucide="check-circle" class="w-3 h-3 inline"></i></span>` : '';
+                    element.className = `flex items-center justify-between p-2.5 rounded-lg text-sm ${user.id === currentUser.id ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700'}`;
+                    element.innerHTML = `
+                        <div class="flex items-center space-x-2 min-w-0">
+                            <span class="font-bold text-gray-500 dark:text-gray-400 w-5">${i + 1}.</span>
+                            <img src="${user.avatar}" alt="${user.name}'s avatar" class="w-8 h-8 rounded-full flex-shrink-0">
+                            <div class="min-w-0">
+                                <p class="font-semibold truncate flex items-center">${user.name}${verifiedBadgeHtml} ${user.id === currentUser.id ? '<span class="text-xs ml-1">(You)</span>' : ''}</p>
+                                <p class="text-gray-600 dark:text-gray-400 text-xs"><a href="#" class="user-profile-link hover:underline" data-username="${user.username}">@${user.username}</a></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-xs text-green-600 dark:text-green-400 font-medium flex-shrink-0 ml-2">
+                            <i data-lucide="credit-card" class="w-3.5 h-3.5 mr-0.5"></i>
+                            ${user.credits.toFixed(1)} cr
+                        </div>`;
+                    userLeaderboardContainer.appendChild(element);
+                });
+                lucide.createIcons();
+            }
+
+            function renderCourses() {
+                courseListContainer.innerHTML = '';
+                mockCourses.forEach(course => {
+                    const element = document.createElement('div');
+                    element.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md transition-shadow';
+                    const hasCourse = currentUser.purchasedCourses.has(course.id);
+                    const canAfford = currentUser.credits >= course.price;
+                    let btnHtml = '';
+                    if (hasCourse) btnHtml = `<button class="bg-gray-800 dark:bg-gray-600 text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-full" disabled>Owned</button>`;
+                    else if (canAfford) btnHtml = `<button class="buy-course-btn bg-blue-600 text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-full hover:bg-blue-700" data-course-id="${course.id}" data-price="${course.price}">Buy (${course.price} cr)</button>`;
+                    else btnHtml = `<button class="bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold py-2 px-4 rounded-full cursor-not-allowed" disabled>Buy (${course.price} cr)</button>`;
+                    element.innerHTML = `
+                         <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-blue-700 dark:text-blue-400 hover:underline cursor-pointer">${course.title}</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">by @${course.instructor}</span>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 my-2 text-sm">${course.description}</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-yellow-500 fill-current"></i>
+                                <strong>${course.rating}</strong>&nbsp;(${course.ratingCount})
+                            </span>
+                            ${btnHtml}
+                        </div>`;
+                    courseListContainer.appendChild(element);
+                });
+                lucide.createIcons();
+            }
+
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+                const month = currentCalendarDate.getMonth();
+                const year = currentCalendarDate.getFullYear();
+                calendarMonthYear.textContent = currentCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                const daysInMonth = lastDayOfMonth.getDate();
+                const startDayOfWeek = firstDayOfMonth.getDay(); // 0=Sun, 1=Mon,...
+
+                // Add empty placeholders for days before the 1st
+                for (let i = 0; i < startDayOfWeek; i++) {
+                    calendarGrid.appendChild(document.createElement('div'));
+                }
+
+                // Add days of the month
+                const today = new Date();
+                const todayDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const selectedDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(currentCalendarDate.getDate()).padStart(2, '0')}`;
+
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const button = document.createElement('button');
+                    button.textContent = day;
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                     button.className = 'calendar-day flex items-center justify-center p-1 border border-gray-200 dark:border-gray-600 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500';
+
+                    if (dateString === todayDateString) button.classList.add('today');
+                    if (dateString === selectedDateString) button.classList.add('selected');
+
+                    button.dataset.date = dateString;
+                    button.addEventListener('click', handleDateSelect);
+                    calendarGrid.appendChild(button);
+                }
+            }
+
+            function renderDailySchedule(dateString) {
+                const dayData = dailyData[dateString] || { tasks: [], meetings: [] };
+                const displayDate = new Date(dateString + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                selectedDateTasks.textContent = displayDate;
+                selectedDateMeetings.textContent = displayDate;
+
+                taskList.innerHTML = dayData.tasks.map(task => `<li>${task}</li>`).join('') || '<li class="text-gray-500 dark:text-gray-400">No tasks</li>';
+                meetingList.innerHTML = dayData.meetings.map(meet => `<li>${meet}</li>`).join('') || '<li class="text-gray-500 dark:text-gray-400">No meetings</li>';
+            }
+
+            function renderSchedules() { // Initial render for schedules
+                renderCalendar();
+                renderDailySchedule(currentCalendarDate.toISOString().split('T')[0]);
+            }
+
+            function renderCreditStats() {
+                userCreditsDisplay.textContent = currentUser.credits.toFixed(1);
+                userRatingDisplay.textContent = currentUser.averageRating;
+            }
+
+            function renderUserCards() {
+                currentUserCard.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <img src="${currentUser.avatar}" alt="Your Avatar" class="w-10 h-10 rounded-full">
+                        <div>
+                            <p class="font-bold text-sm">${currentUser.name}</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">@${currentUser.username}</p>
+                        </div>
+                    </div>`;
+                currentUserAvatarPost.src = currentUser.avatarPost;
+                dashboardUserAvatar.src = currentUser.avatarLarge;
+                dashboardUserName.textContent = currentUser.name;
+                dashboardUserUsername.textContent = `@${currentUser.username}`;
+            }
+
+            function renderUserDashboardStats() {
+                const userPostCount = allPosts.filter(p => p.isOwnPost).length;
+                dashboardUserPosts.textContent = userPostCount;
+            }
+
+             function renderProfile(username) {
+                const user = allUsers.find(u => u.username === username);
+                if (!user) { console.error("User not found:", username); showView('homeView'); return; }
+
+                profileAvatar.src = user.avatarLarge || user.avatar || 'https://placehold.co/96x96/cccccc/333333?text=?';
+                profileName.textContent = user.name;
+                profileUsername.textContent = `@${user.username}`;
+
+                // Show/hide verified badge
+                profileVerifiedBadge.classList.toggle('hidden', !user.isVerified);
+
+                 // Show/hide and update LinkedIn link
+                 if (user.linkedInUrl) {
+                     profileLinkedInLink.href = user.linkedInUrl;
+                     profileLinkedInLink.classList.remove('hidden');
+                 } else {
+                     profileLinkedInLink.classList.add('hidden');
+                 }
+
+
+                profilePostCount.textContent = allPosts.filter(p => p.user.username === username).length;
+                profileFollowers.textContent = user.followers || '---';
+                profileFollowing.textContent = user.following || '---';
+
+                profilePostsView.innerHTML = '';
+                const userPosts = allPosts.filter(p => p.user.username === username);
+                if (userPosts.length > 0) userPosts.forEach(p => profilePostsView.appendChild(createPostElement(p)));
+                else profilePostsView.innerHTML = '<p class="p-4 text-gray-500 dark:text-gray-400 text-center">No posts yet.</p>';
+
+                profileProjectsView.innerHTML = '';
+                const userProjects = allProjects.filter(p => p.author === username);
+                 if (userProjects.length > 0) userProjects.forEach(p => profileProjectsView.appendChild(createProjectElement(p)));
+                else profileProjectsView.innerHTML = '<p class="p-4 text-gray-500 dark:text-gray-400 text-center">No projects yet.</p>';
+
+                showProfileTab('posts'); // Default to posts tab
+                lucide.createIcons(); // Re-render icons for badge and link
+            }
+
+
+            // --- 4. EVENT HANDLERS ---
+
+            function showView(viewId, data = null) {
+                allViews.forEach(view => view.classList.add('hidden'));
+                navLinks.forEach(link => link.classList.remove('font-bold'));
+
+                let targetView;
+                let activeNavButton;
+
+                switch (viewId) {
+                    case 'homeView':
+                        targetView = homeView;
+                        activeNavButton = communityTabPanel.classList.contains('hidden') ? navHomeButton : navCommunityButton;
+                        if (data === 'community') showHomeTab('community'); else showHomeTab('feed');
+                        break;
+                    case 'profileView':
+                        targetView = profileView; renderProfile(data); // data is username
+                        activeNavButton = (data === currentUser.username) ? navDashboardButton : null;
+                        break;
+                    case 'matchView': targetView = matchView; activeNavButton = navMatchButton; break;
+                    case 'creditsView': targetView = creditsView; activeNavButton = navCreditsButton; showCreditsTab('store'); break;
+                    case 'coursesView': targetView = coursesView; activeNavButton = navCoursesButton; break;
+                    case 'schedulesView': targetView = schedulesView; activeNavButton = navSchedulesButton; break;
+                    case 'settingsView': targetView = settingsView; activeNavButton = navSettingsButton; break;
+                    default: targetView = homeView; activeNavButton = navHomeButton; showHomeTab('feed');
+                }
+
+                if (targetView) targetView.classList.remove('hidden');
+                if (activeNavButton) activeNavButton.classList.add('font-bold');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+             function showHomeTab(tabId) {
+                feedTabPanel.classList.add('hidden'); communityTabPanel.classList.add('hidden');
+                feedTabButton.classList.remove('active'); feedTabButton.setAttribute('aria-selected', 'false');
+                communityTabButton.classList.remove('active'); communityTabButton.setAttribute('aria-selected', 'false');
+                navHomeButton.classList.remove('font-bold'); navCommunityButton.classList.remove('font-bold');
+
+                if (tabId === 'feed') {
+                    feedTabPanel.classList.remove('hidden'); feedTabButton.classList.add('active'); feedTabButton.setAttribute('aria-selected', 'true');
+                    navHomeButton.classList.add('font-bold');
+                } else if (tabId === 'community') {
+                    communityTabPanel.classList.remove('hidden'); communityTabButton.classList.add('active'); communityTabButton.setAttribute('aria-selected', 'true');
+                    navCommunityButton.classList.add('font-bold');
+                }
+            }
+
+            function showCreditsTab(tabId) {
+                creditsStoreView.classList.add('hidden'); creditsLeaderboardView.classList.add('hidden');
+                creditsStoreTabButton.classList.remove('active'); creditsStoreTabButton.setAttribute('aria-selected', 'false');
+                creditsLeaderboardTabButton.classList.remove('active'); creditsLeaderboardTabButton.setAttribute('aria-selected', 'false');
+                if (tabId === 'store') {
+                    creditsStoreView.classList.remove('hidden'); creditsStoreTabButton.classList.add('active'); creditsStoreTabButton.setAttribute('aria-selected', 'true');
+                } else {
+                    creditsLeaderboardView.classList.remove('hidden'); creditsLeaderboardTabButton.classList.add('active'); creditsLeaderboardTabButton.setAttribute('aria-selected', 'true');
+                }
+            }
+
+            function showProfileTab(tabId) {
+                profilePostsView.classList.add('hidden'); profileProjectsView.classList.add('hidden');
+                profilePostsTab.classList.remove('active'); profilePostsTab.setAttribute('aria-selected', 'false');
+                profileProjectsTab.classList.remove('active'); profileProjectsTab.setAttribute('aria-selected', 'false');
+                if (tabId === 'posts') {
+                    profilePostsView.classList.remove('hidden'); profilePostsTab.classList.add('active'); profilePostsTab.setAttribute('aria-selected', 'true');
+                } else {
+                    profileProjectsView.classList.remove('hidden'); profileProjectsTab.classList.add('active'); profileProjectsTab.setAttribute('aria-selected', 'true');
+                }
+            }
+
+            function handlePostTextareaInput(e) { submitPostButton.disabled = e.target.value.trim() === ''; }
+
+            function handleSubmitPost() {
+                const content = postTextarea.value.trim(); if (!content) return;
+                const newPost = { id: `p${Date.now()}`, isOwnPost: true, user: { name: currentUser.name, username: currentUser.username, avatar: currentUser.avatarPost }, content: content, timestamp: "Just now", interactions: { raises: 0, spreads: 0, points: 0 } };
+                allPosts.unshift(newPost); renderAllPosts(); renderUserDashboardStats();
+                postTextarea.value = ''; submitPostButton.disabled = true; geminiError.classList.add('hidden');
+            }
+
+            function handleNavPostClick() { showView('homeView', 'feed'); postTextarea.focus(); }
+
+            async function handleGeneratePost() {
+                const prompt = postTextarea.value; geminiError.classList.add('hidden');
+                generatePostButton.classList.add('btn-loading'); generatePostButton.disabled = true;
+                const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const systemPrompt = "You are a social media assistant for 'Skills Connect'. Write a short, engaging, professional post (under 50 words) based on the user's topic. Include relevant hashtags. Be encouraging.";
+                const userQuery = `Write a post about: "${prompt || 'my productive day'}"`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } }) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const result = await response.json(); const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) { postTextarea.value = text; postTextarea.dispatchEvent(new Event('input', { bubbles: true })); } else throw new Error('No content returned.');
+                } catch (error) { console.error('Gemini API fail:', error); geminiError.textContent = 'Failed to generate. Try again.'; geminiError.classList.remove('hidden'); }
+                finally { generatePostButton.classList.remove('btn-loading'); generatePostButton.disabled = false; }
+            }
+
+            function handleInteractionClick(e) {
+                const button = e.target.closest('.interaction-btn'); if (!button) return;
+                const postId = button.dataset.postId; const type = button.dataset.type;
+                const post = allPosts.find(p => p.id === postId); if (!post) return;
+                switch (type) {
+                    case 'raise': userInteractions.raised.has(postId) ? (userInteractions.raised.delete(postId), post.interactions.raises--) : (userInteractions.raised.add(postId), post.interactions.raises++); break;
+                    case 'spread': userInteractions.spread.has(postId) ? (userInteractions.spread.delete(postId), post.interactions.spreads--) : (userInteractions.spread.add(postId), post.interactions.spreads++); break;
+                    case 'points': console.log(`Points for ${postId}`); break;
+                    case 'share': console.log(`Share ${postId}`); break;
+                }
+                renderAllPosts(); if (!profileView.classList.contains('hidden')) renderProfile(profileUsername.textContent.substring(1));
+            }
+
+            function handleDeletePost(e) {
+                const button = e.target.closest('.delete-post-btn'); if (!button) return;
+                const postId = button.dataset.postId; allPosts = allPosts.filter(p => p.id !== postId);
+                renderAllPosts(); renderUserDashboardStats(); if (!profileView.classList.contains('hidden')) renderProfile(profileUsername.textContent.substring(1));
+            }
+
+            function handleFindMatches() {
+                const skillsQuery = skillsFilterInput.value.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+                const locationQuery = locationFilterInput.value.toLowerCase().trim();
+                const userCredits = currentUser.credits; const creditRange = 50;
+                const matches = mockUsers.filter(u => {
+                    if (u.id === currentUser.id) return false;
+                    const creditsMatch = Math.abs(u.credits - userCredits) <= creditRange;
+                    const locationMatch = !locationQuery || u.location.toLowerCase().includes(locationQuery);
+                    const userSkills = u.skills.map(s => s.toLowerCase());
+                    const skillsMatch = !skillsQuery.length || skillsQuery.some(skill => userSkills.includes(skill));
+                    return creditsMatch && locationMatch && skillsMatch;
+                });
+                renderMatches(matches);
+            }
+
+            function handleBuyItem(e) {
+                const btn = e.target.closest('.buy-item-btn'); if (!btn) return;
+                const price = parseInt(btn.dataset.price); if (currentUser.credits >= price) { currentUser.credits -= price; renderCreditStats(); renderStoreItems(); renderLeaderboards(); }
+            }
+
+            function handleBuyCourse(e) {
+                const btn = e.target.closest('.buy-course-btn'); if (!btn) return;
+                const price = parseInt(btn.dataset.price); const courseId = btn.dataset.courseId;
+                if (currentUser.credits >= price) { currentUser.credits -= price; currentUser.purchasedCourses.add(courseId); renderCreditStats(); renderStoreItems(); renderLeaderboards(); renderCourses(); }
+            }
+
+            function handleDateSelect(e) {
+                const selectedDateStr = e.target.dataset.date; currentCalendarDate = new Date(selectedDateStr + 'T00:00:00');
+                renderCalendar(); renderDailySchedule(selectedDateStr);
+            }
+
+            function changeMonth(offset) {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
+                const tempDate = new Date(currentCalendarDate); tempDate.setDate(1); tempDate.setMonth(tempDate.getMonth() + offset);
+                const lastDayOfTargetMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+                if (currentCalendarDate.getDate() > lastDayOfTargetMonth) currentCalendarDate.setDate(lastDayOfTargetMonth);
+                renderCalendar(); renderDailySchedule(currentCalendarDate.toISOString().split('T')[0]);
+            }
+
+            function handleAddTask() {
+                const taskText = newTaskInput.value.trim(); if (!taskText) return;
+                const dateString = currentCalendarDate.toISOString().split('T')[0];
+                if (!dailyData[dateString]) dailyData[dateString] = { tasks: [], meetings: [] };
+                dailyData[dateString].tasks.push(taskText); newTaskInput.value = ''; renderDailySchedule(dateString);
+            }
+
+            function updateToggleVisual(toggle, isActive) {
+                const span = toggle.querySelector('span'); toggle.setAttribute('aria-checked', isActive);
+                if (isActive) { toggle.classList.add('toggle-on', 'bg-blue-600'); toggle.classList.remove('bg-gray-200'); span.style.transform = 'translateX(1.25rem)'; }
+                else { toggle.classList.remove('toggle-on', 'bg-blue-600'); toggle.classList.add('bg-gray-200'); span.style.transform = 'translateX(0)'; }
+            }
+
+            function handleDarkModeToggle() { appSettings.darkMode = !appSettings.darkMode; document.documentElement.classList.toggle('dark', appSettings.darkMode); updateToggleVisual(darkModeToggle, appSettings.darkMode); localStorage.setItem('skillsConnectSettings', JSON.stringify(appSettings)); }
+            function handleHighContrastToggle() { appSettings.highContrast = !appSettings.highContrast; document.documentElement.classList.toggle('high-contrast', appSettings.highContrast); updateToggleVisual(highContrastToggle, appSettings.highContrast); localStorage.setItem('skillsConnectSettings', JSON.stringify(appSettings)); }
+            function handleColorblindModeChange(e) {
+                const newMode = e.target.value; appSettings.colorblindMode = newMode;
+                document.documentElement.className = document.documentElement.className.replace(/protanopia|deuteranopia|tritanopia/g, '').trim();
+                if (newMode !== 'none') document.documentElement.classList.add(newMode);
+                if(appSettings.darkMode) document.documentElement.classList.add('dark'); if(appSettings.highContrast) document.documentElement.classList.add('high-contrast');
+                localStorage.setItem('skillsConnectSettings', JSON.stringify(appSettings));
+            }
+            function loadAppSettings() {
+                const saved = localStorage.getItem('skillsConnectSettings');
+                if (saved) {
+                    appSettings = JSON.parse(saved);
+                    document.documentElement.classList.toggle('dark', appSettings.darkMode);
+                    document.documentElement.classList.toggle('high-contrast', appSettings.highContrast);
+                    if (appSettings.colorblindMode !== 'none') document.documentElement.classList.add(appSettings.colorblindMode);
+                    updateToggleVisual(darkModeToggle, appSettings.darkMode);
+                    updateToggleVisual(highContrastToggle, appSettings.highContrast);
+                    colorblindModeSelect.value = appSettings.colorblindMode;
+                }
+            }
+
+            function openReviewModal(projectId) {
+                const project = allProjects.find(p => p.id === projectId); if (!project) return;
+                currentReviewProjectId = projectId; currentReviewStars = 0;
+                modalProjectTitle.textContent = project.title; reviewText.value = ''; starRatingError.classList.add('hidden'); renderStars(0);
+                modalOverlay.classList.remove('hidden'); setTimeout(() => { modalOverlay.classList.remove('opacity-0'); modalPanel.classList.remove('scale-95'); }, 10);
+            }
+            function closeReviewModal() { modalOverlay.classList.add('opacity-0'); modalPanel.classList.add('scale-95'); setTimeout(() => { modalOverlay.classList.add('hidden'); currentReviewProjectId = null; currentReviewStars = 0; }, 300); }
+            function renderStars(rating) { modalStars.forEach(star => { const val = parseInt(star.dataset.value); star.classList.toggle('selected', val <= rating); star.setAttribute('aria-checked', val <= rating); star.classList.remove('hover'); }); }
+            function handleStarHover(e) { const star = e.target.closest('.star-btn'); if (!star) { renderStars(currentReviewStars); return; } const hoverRating = parseInt(star.dataset.value); modalStars.forEach(s => { s.classList.toggle('hover', parseInt(s.dataset.value) <= hoverRating); }); }
+            function handleStarClick(e) { const star = e.target.closest('.star-btn'); if (!star) return; currentReviewStars = parseInt(star.dataset.value); starRatingError.classList.add('hidden'); renderStars(currentReviewStars); }
+            function handleReviewClick(e) { const btn = e.target.closest('.review-project-btn'); if (btn) openReviewModal(btn.dataset.projectId); }
+            function handleSubmitReview() {
+                if (currentReviewStars === 0) { starRatingError.classList.remove('hidden'); return; }
+                const project = allProjects.find(p => p.id === currentReviewProjectId); if (!project) return;
+                const newCredits = currentReviewStars * 0.5; project.credits += newCredits;
+                const totalRating = (project.rating * project.ratingCount) + currentReviewStars; project.ratingCount++; project.rating = (totalRating / project.ratingCount).toFixed(1);
+                console.log(`Review for ${project.title}: ${currentReviewStars} stars, +${newCredits} credits`);
+                renderProjects(); renderLeaderboards(); closeReviewModal(); if (!profileView.classList.contains('hidden')) renderProfile(profileUsername.textContent.substring(1));
+            }
+
+            function handleProfileLinkClick(e) { const link = e.target.closest('.user-profile-link'); if (!link) return; e.preventDefault(); const username = link.dataset.username; if (username) showView('profileView', username); }
+            function addKeyboardSupport(element) { if(!element) return; element.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); element.click(); } }); }
+
+            // --- 6. INITIALIZATION ---
+            function init() {
+                loadAppSettings(); renderUserCards(); renderAllPosts(); renderProjects(); renderCreditStats();
+                renderStoreItems(); renderLeaderboards(); renderUserDashboardStats(); renderCourses(); renderSchedules();
+
+                // Nav Listeners
+                navHomeButton.addEventListener('click', (e) => { e.preventDefault(); showView('homeView', 'feed'); });
+                navCommunityButton.addEventListener('click', (e) => { e.preventDefault(); showView('homeView', 'community'); });
+                navMatchButton.addEventListener('click', (e) => { e.preventDefault(); showView('matchView'); });
+                navSchedulesButton.addEventListener('click', (e) => { e.preventDefault(); showView('schedulesView'); });
+                navCreditsButton.addEventListener('click', (e) => { e.preventDefault(); showView('creditsView'); });
+                navCoursesButton.addEventListener('click', (e) => { e.preventDefault(); showView('coursesView'); });
+                navSettingsButton.addEventListener('click', (e) => { e.preventDefault(); showView('settingsView'); });
+                navDashboardButton.addEventListener('click', (e) => { e.preventDefault(); showView('profileView', currentUser.username); });
+
+                // Home Tab Listeners
+                feedTabButton.addEventListener('click', (e) => { e.preventDefault(); showHomeTab('feed'); });
+                communityTabButton.addEventListener('click', (e) => { e.preventDefault(); showHomeTab('community'); });
+
+                // Profile Tab Listeners
+                profilePostsTab.addEventListener('click', (e) => { e.preventDefault(); showProfileTab('posts'); });
+                profileProjectsTab.addEventListener('click', (e) => { e.preventDefault(); showProfileTab('projects'); });
+
+                // Credits Tab Listeners
+                creditsStoreTabButton.addEventListener('click', (e) => { e.preventDefault(); showCreditsTab('store'); });
+                creditsLeaderboardTabButton.addEventListener('click', (e) => { e.preventDefault(); showCreditsTab('leaderboard'); });
+
+                // Post Listeners
+                postTextarea.addEventListener('input', handlePostTextareaInput);
+                submitPostButton.addEventListener('click', handleSubmitPost);
+                navPostButton.addEventListener('click', handleNavPostClick);
+                generatePostButton.addEventListener('click', handleGeneratePost);
+
+                // Match Listeners
+                findMatchesButton.addEventListener('click', handleFindMatches);
+                scanLocationButton.addEventListener('click', () => { locationFilterInput.value = currentUser.location; });
+
+                // Schedules Listeners
+                prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+                nextMonthBtn.addEventListener('click', () => changeMonth(1));
+                addTaskBtn.addEventListener('click', handleAddTask);
+                newTaskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleAddTask(); });
+
+                // Settings Listeners
+                darkModeToggle.addEventListener('click', handleDarkModeToggle);
+                highContrastToggle.addEventListener('click', handleHighContrastToggle);
+                colorblindModeSelect.addEventListener('change', handleColorblindModeChange);
+
+                // Modal Listeners
+                closeModalButton.addEventListener('click', closeReviewModal);
+                modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeReviewModal(); });
+                modalStarContainer.addEventListener('mouseover', handleStarHover);
+                modalStarContainer.addEventListener('mouseleave', () => renderStars(currentReviewStars));
+                modalStarContainer.addEventListener('click', handleStarClick);
+                submitReviewButton.addEventListener('click', handleSubmitReview);
+
+                // Event Delegation
+                const mainContentArea = document.querySelector('.main-content-area');
+                mainContentArea.addEventListener('click', (e) => {
+                    handleInteractionClick(e); handleDeletePost(e); handleReviewClick(e);
+                    handleBuyItem(e); handleBuyCourse(e); handleProfileLinkClick(e);
+                });
+
+                // User Card Listener
+                addKeyboardSupport(currentUserCard);
+                currentUserCard.addEventListener('click', () => showView('profileView', currentUser.username));
+
+                // Initial View
+                showView('homeView', 'feed');
+
+                lucide.createIcons();
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+
+</body>
+</html>
+
